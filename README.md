@@ -8,12 +8,14 @@ Appointment management system for a barbershop built with ASP.NET Core using Cle
 
 ## Technologies
 
-- ASP.NET Core Web API
+- ASP.NET Core Web API (.NET 8)
 - Clean Architecture
-- Entity Framework Core (coming soon)
-- SQL Server (coming soon)
-- Swagger / OpenAPI
+- Entity Framework Core
+- SQL Server
+- JWT Authentication
+- Swagger
 - Dependency Injection
+- Global Exception Handling Middleware
 
 ---
 
@@ -21,10 +23,26 @@ Appointment management system for a barbershop built with ASP.NET Core using Cle
 
 The project follows Clean Architecture principles:
 
-- Domain → Business entities and business rules
-- Application → Use cases and application logic
-- Infrastructure → Persistence and external services
-- API → Controllers and HTTP endpoints
+- **Domain** → Business entities and core rules  
+- **Application** → Use cases and application logic  
+- **Infrastructure** → Persistence, repositories, EF Core configuration  
+- **API** → Controllers, middleware, authentication  
+
+The architecture promotes:
+
+- Separation of concerns  
+- Testability  
+- Scalability  
+- Maintainability  
+
+---
+## Authentication & Security
+
+- JWT-based authentication
+- Secure password hashing
+- Unique email constraint at database level
+- Global exception middleware (no stack trace exposure in production)
+- Restricted delete behaviors to prevent cascade data loss
 
 ---
 
@@ -37,19 +55,31 @@ The project follows Clean Architecture principles:
 
 ---
 
-## 🎯 Project goal
+## Project goal
 
 Educational project to demonstrate enterprise-level backend development using .NET, Clean Architecture, and cloud-ready design.
 
 ---
 
-## Future improvements
 
-- SQL Server database integration
-- JWT authentication
-- Users and roles management
-- Appointment scheduling logic
-- Azure deployment
+## Current features
+-User registration
+-User authentication (JWT)
+-Business management
+-Barber management
+-Services management
+-Appointment entity structure
+-Global error handling
+
+---
+
+## Upcoming Features
+
+- Online payment integration
+- Google sign-up and sign-in (OAuth 2.0)
+- Advanced role and permission system
+- Appointment notifications
+- Cloud deployment
 
 ---
 
@@ -59,12 +89,14 @@ Sistema de gestión de citas para barbería desarrollado con ASP.NET Core usando
 
 ## Tecnologías
 
-- ASP.NET Core Web API
+- ASP.NET Core Web API (.NET 8)
 - Clean Architecture
-- Entity Framework Core (próximamente)
-- SQL Server (próximamente)
+- Entity Framework Core
+- SQL Server
+- JWT Authentication
 - Swagger
 - Inyección de dependencias
+- Middleware global de manejo de excepciones
 
 ## Arquitectura
 
@@ -75,7 +107,26 @@ El proyecto sigue los principios de Clean Architecture:
 - Infrastructure → Persistencia y servicios externos
 - API → Controladores y endpoints HTTP
 
-## ▶ Cómo ejecutar el proyecto
+Promueve:
+
+-Separación de responsabilidades
+-Escalabilidad
+-Mantenibilidad
+-Facilidad de pruebas
+
+## Cómo ejecutar el proyecto
+
+Autenticación basada en JWT
+
+Hash seguro de contraseñas
+
+Email único a nivel de base de datos
+
+No se exponen detalles internos en producción
+
+Relaciones configuradas explícitamente en EF Core
+
+## Cómo ejecutar el proyecto
 
 1. Clonar el repositorio
 2. Abrir la solución en Visual Studio
@@ -86,10 +137,20 @@ El proyecto sigue los principios de Clean Architecture:
 
 Proyecto educativo para demostrar desarrollo backend profesional con .NET, arquitectura limpia y preparación para la nube.
 
-## Próximas mejoras
+## Funcionalidades actuales
+- Registro de usuarios
+- Autenticación de usuarios (JWT)
+- Gestión de negocios
+- Gestión de barberos
+- Gestión de servicios
+- Estructura de la entidad de citas
+- Manejo global de errores
 
-- Integración con SQL Server
-- Autenticación JWT
-- Gestión de usuarios y roles
-- Sistema de citas
-- Despliegue en Azure
+## Próximas funcionalidades
+
+- Integración de pagos en línea
+- Registro e inicio de sesión con Google (OAuth 2.0)
+- Sistema de roles y permisos más avanzado
+- Notificaciones de citas
+- Despliegue en la nube
+
