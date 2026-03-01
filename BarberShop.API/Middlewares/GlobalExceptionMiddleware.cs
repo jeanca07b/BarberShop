@@ -30,18 +30,25 @@ namespace BarberShop.API.Middlewares
                 _logger.LogError(ex, "Unhandled exception occurred");
 
                 context.Response.ContentType = "application/json";
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
+                context.Response.StatusCode = ex switch
+                {
+                    UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
+                    ArgumentException => StatusCodes.Status400BadRequest,
+                    KeyNotFoundException => StatusCodes.Status404NotFound,
+                    _ => StatusCodes.Status500InternalServerError
+                };
 
                 var response = new ErrorResponse
                 {
                     StatusCode = context.Response.StatusCode,
-                    Message = "An unexpected error occurred.",
+                    Message = context.Response.StatusCode == 500
+                        ? "An unexpected error occurred."
+                        : ex.Message,
                     Details = _env.IsDevelopment() ? ex.Message : null
                 };
 
-                var json = JsonSerializer.Serialize(response);
-
-                await context.Response.WriteAsync(json);
+                await context.Response.WriteAsJsonAsync(response);
             }
         }
     }

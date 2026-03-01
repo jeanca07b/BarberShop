@@ -59,13 +59,13 @@ namespace BarberShop.Infrastructure.Persistence
             {
                 builder.OwnsOne(b => b.Address, address =>
                 {
-                    address.Property(a => a.Street).HasColumnName("Street").IsRequired();
-                    address.Property(a => a.City).HasColumnName("City").IsRequired();
-                    address.Property(a => a.State).HasColumnName("State").IsRequired();
-                    address.Property(a => a.Country).HasColumnName("Country").IsRequired();
-                    address.Property(a => a.Latitude).HasColumnName("Latitude").IsRequired();
-                    address.Property(a => a.Longitude).HasColumnName("Longitude").IsRequired();
-                    address.Property(a => a.PlaceId).HasColumnName("PlaceId");
+                    address.Property(a => a.Street).HasColumnName("Street").IsRequired().HasMaxLength(200);
+                    address.Property(a => a.City).HasColumnName("City").IsRequired().HasMaxLength(100);
+                    address.Property(a => a.State).HasColumnName("State").IsRequired().HasMaxLength(100);
+                    address.Property(a => a.Country).HasColumnName("Country").IsRequired().HasMaxLength(100);
+                    address.Property(a => a.Latitude).HasColumnName("Latitude").IsRequired().HasMaxLength(100);
+                    address.Property(a => a.Longitude).HasColumnName("Longitude").IsRequired().HasMaxLength(100);
+                    address.Property(a => a.PlaceId).HasColumnName("PlaceId").HasMaxLength(100);
                 });
 
                 builder.HasOne<User>()
@@ -178,6 +178,7 @@ namespace BarberShop.Infrastructure.Persistence
 
             modelBuilder.Entity<User>(entity =>
             {
+                entity.HasQueryFilter(u => u.IsActive);
                 entity.HasKey(u => u.Id);
 
                 entity.Property(u => u.Email)

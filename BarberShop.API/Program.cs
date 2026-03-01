@@ -1,3 +1,4 @@
+using BarberShop.API.Configuration;
 using BarberShop.API.Middlewares;
 using BarberShop.API.Services;
 using BarberShop.Application.Interfaces;
@@ -9,15 +10,28 @@ using BarberShop.Infrastructure.Persistence.Repositories;
 using BarberShop.Infrastructure.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
-var jwtKey = builder.Configuration["Jwt:Key"];
-var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection("Jwt"));
+
+var jwtSettings = builder.Configuration
+    .GetSection("Jwt")
+    .Get<JwtSettings>();
+
+if (jwtSettings == null || string.IsNullOrWhiteSpace(jwtSettings.Key))
+    throw new Exception("JWT configuration missing");
+
+if (jwtSettings.Key.Length < 32)
+    throw new Exception("JWT Key must be at least 256 bits (32 chars)");
+
 
 builder.Services.AddAuthentication(options =>
 {
@@ -26,18 +40,67 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    options.RequireHttpsMetadata = true;
+    options.SaveToken = false;
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
-        ValidateAudience = false,
+        ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
+        RequireExpirationTime = true,
 
-        ValidIssuer = jwtIssuer,
+        ValidIssuer = jwtSettings!.Issuer,
+        ValidAudience = jwtSettings.Audience,
+
         IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwtSettings.Key)),
 
-            Encoding.UTF8.GetBytes(jwtKey!))
+        ClockSkew = TimeSpan.FromSeconds(30)
     };
+});
+
+
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        if (allowedOrigins == null || allowedOrigins.Length == 0)
+            throw new Exception("CORS AllowedOrigins not configured.");
+
+        policy.WithOrigins(allowedOrigins!)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("LoginPolicy", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString(),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+
+    options.AddPolicy("GlobalPolicy", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString(),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 100,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
 });
 
 builder.Services.AddControllers();
@@ -83,7 +146,14 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddDbContext<BarberShopDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+   options.UseSqlServer(
+    builder.Configuration.GetConnectionString("DefaultConnection"),
+    sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(5);
+        sqlOptions.CommandTimeout(30);
+    })
+    );
 
 // MediatR
 builder.Services.AddMediatR(cfg =>
@@ -108,7 +178,7 @@ var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
     app.UseSwagger();
     app.UseSwaggerUI(options =>
@@ -119,6 +189,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowFrontend");
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

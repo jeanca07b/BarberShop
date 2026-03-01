@@ -23,8 +23,10 @@ namespace BarberShop.Infrastructure.Repositories
 
         public async Task<User?> GetByEmailAsync(string email)
         {
+            var normalizedEmail = email.Trim().ToLower();
+
             return await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == email);
+                .FirstOrDefaultAsync(u => u.Email == normalizedEmail);
         }
 
         public async Task AddAsync(User user)

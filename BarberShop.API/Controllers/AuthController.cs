@@ -5,10 +5,12 @@ using BarberShop.Domain.Enums;
 using BarberShop.Domain.Repositories;
 using BCrypt.Net;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace BarberShop.API.Controllers
 {
     [ApiController]
+    [EnableRateLimiting("LoginPolicy")]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
@@ -26,20 +28,21 @@ namespace BarberShop.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequest request)
         {
+            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
             var existingUser = await _userRepository.GetByEmailAsync(request.Email);
             if (existingUser != null)
-                return BadRequest("User already exists.");
+                return BadRequest("Invalid registration request.");
 
             if (!IsValidPassword(request.Password))
-                return BadRequest("Password must be at least 8 characters long and include an uppercase letter, a number, and a special character.");
+                return BadRequest("Invalid registration request.");
 
-            var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, workFactor: 12);
 
 
             var user = new User(
-                request.Email,
+                normalizedEmail,
                 passwordHash,
-                request.Role
+                UserRole.Customer
             );
 
             await _userRepository.AddAsync(user);
@@ -53,13 +56,21 @@ namespace BarberShop.API.Controllers
         {
             var user = await _userRepository.GetByEmailAsync(request.Email);
 
+            var fakeHash = "$2a$12$abcdefghijklmnopqrstuvwxyzABCDE12345678901234567890";
+
             if (user == null)
+            {
+                BCrypt.Net.BCrypt.Verify(request.Password, fakeHash);
                 return Unauthorized("Invalid credentials.");
+            }
 
             var isPasswordValid = BCrypt.Net.BCrypt.Verify(
                 request.Password,
                 user.PasswordHash
             );
+
+            if (!user.IsActive)
+                return Unauthorized("Invalid credentials.");
 
             if (!isPasswordValid)
                 return Unauthorized("Invalid credentials.");
