@@ -1,11 +1,10 @@
-﻿using BarberShop.API.DTOs;
+﻿using BarberShop.Application.DTOs.Customer;
 using BarberShop.Application.Queries;
 using BarberShop.Domain.Entities;
 using BarberShop.Domain.Repositories;
 using BarberShop.Domain.ValueObjects;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using BarberShop.API.Mappings;
-
 
 namespace BarberShop.API.Controllers
 {
@@ -17,7 +16,6 @@ namespace BarberShop.API.Controllers
         private readonly ICustomerRepository _customerRepository;
         private readonly GetCustomerByIdQuery _getCustomerById;
 
-
         public CustomersController(
             GetAllCustomersQuery getAllCustomers,
             GetCustomerByIdQuery getCustomerById,
@@ -28,31 +26,12 @@ namespace BarberShop.API.Controllers
             _customerRepository = customerRepository;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var customers = await _getAllCustomers.ExecuteAsync();
-
-            var response = customers.Select(c => c.ToResponse());
-
-            return Ok(response);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Create(CreateCustomerRequest request)
-        {
-            var email = Email.Create(request.Email);
-
-            var customer = new Customer(
-                request.FirstName,
-                request.LastName,
-                email
-            );
-
-            await _customerRepository.AddAsync(customer);
-            await _customerRepository.SaveChangesAsync();
-
-            return Ok(customer.Id);
+            return Ok(customers);
         }
 
         [HttpGet("{id}")]
@@ -63,8 +42,9 @@ namespace BarberShop.API.Controllers
             if (customer is null)
                 return NotFound();
 
-            return Ok(customer.ToResponse());
+            return Ok(customer);
         }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateCustomerRequest request)
@@ -75,9 +55,8 @@ namespace BarberShop.API.Controllers
                 return NotFound();
 
             customer.UpdateName(request.FirstName, request.LastName);
-
-            var email = Email.Create(request.Email);
-            customer.UpdateEmail(email);
+            customer.UpdateEmail(Email.Create(request.Email));
+            customer.UpdatePhone(PhoneNumber.Create(request.PhoneNumber));
 
             await _customerRepository.SaveChangesAsync();
 
@@ -97,7 +76,5 @@ namespace BarberShop.API.Controllers
 
             return NoContent();
         }
-
-
     }
 }

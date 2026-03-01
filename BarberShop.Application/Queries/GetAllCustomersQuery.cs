@@ -1,4 +1,4 @@
-﻿using BarberShop.Application.DTOs;
+﻿using BarberShop.Application.DTOs.Customer;
 using BarberShop.Domain.Repositories;
 using System;
 using System.Collections.Generic;
@@ -17,16 +17,16 @@ namespace BarberShop.Application.Queries
             _repository = repository;
         }
 
-        public async Task<List<CustomerDto>> ExecuteAsync()
+        public async Task<List<CustomerResponse>> ExecuteAsync()
         {
             var customers = await _repository.GetAllAsync();
 
-            return customers.Select(c => new CustomerDto
+            return customers.Select(c => new CustomerResponse
             {
                 Id = c.Id,
-                FirstName = c.FirstName,
-                LastName = c.LastName,
-                Email = c.Email.Value
+                FullName = $"{c.FirstName} {c.LastName}",
+                Email = c.Email.Value,
+                PhoneNumber = c.PhoneNumber.Value
             }).ToList();
         }
     }

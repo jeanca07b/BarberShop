@@ -1,4 +1,4 @@
-﻿using BarberShop.Application.DTOs;
+﻿using BarberShop.Application.DTOs.Customer;
 using BarberShop.Domain.Repositories;
 
 namespace BarberShop.Application.Queries
@@ -12,19 +12,19 @@ namespace BarberShop.Application.Queries
             _repository = repository;
         }
 
-        public async Task<CustomerDto?> ExecuteAsync(Guid id)
+        public async Task<CustomerResponse?> ExecuteAsync(Guid id)
         {
             var customer = await _repository.GetByIdAsync(id);
 
             if (customer is null)
                 return null;
 
-            return new CustomerDto
+            return new CustomerResponse
             {
                 Id = customer.Id,
-                FirstName = $"{customer.FirstName}",
-                LastName = $"{customer.LastName}",
-                Email = customer.Email.Value
+                FullName = $"{customer.FirstName} {customer.LastName}",
+                Email = customer.Email.Value,
+                PhoneNumber = customer.PhoneNumber.Value
             };
         }
     }

@@ -1,5 +1,4 @@
 ﻿using BarberShop.Domain.Common;
-using BarberShop.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,29 +9,49 @@ namespace BarberShop.Domain.Entities
 {
     public class Barber : BaseEntity
     {
-        public string FirstName { get; private set; } = null!;
-        public string LastName { get; private set; } = null!;
-        public Email Email { get; private set; } = null!;
-        public bool IsActive { get; private set; }
 
+        public string FullName { get; private set; } = null!;
 
-        public Barber(string firstName, string lastName, string email)
-        {
-            FirstName = firstName;
-            LastName = lastName;
-            Email = Email.Create(email);
-            IsActive = true;
+        public string? Phone { get; private set; }
 
-            Validate();
-        }
+        public string? Description { get; private set; }
+
+        public ICollection<BusinessBarber> BusinessBarbers { get; private set; } = new List<BusinessBarber>();
+
+        public bool IsActive { get; private set; } = true;
+
+        public Guid UserId { get; private set; }
+
         private Barber() { }
 
-        private void Validate()
+        public Barber(string fullName, string? phone, string? description, Guid userId)
         {
-            if (string.IsNullOrWhiteSpace(FirstName))
-                throw new ArgumentException("First name is required.");
-            if (string.IsNullOrWhiteSpace(LastName))
-                throw new ArgumentException("Last name is required.");
+            if (string.IsNullOrWhiteSpace(fullName))
+                throw new ArgumentException("Full name is required.");
+
+            if (userId == Guid.Empty)
+                throw new ArgumentException("UserId is required.");
+
+            if (description?.Length > 500)
+                throw new ArgumentException("Description cannot exceed 500 characters.");
+
+            FullName = fullName;
+            Phone = phone;
+            Description = description;
+            UserId = userId;
+            IsActive = true;
+        }
+        public void Update(string fullName, string? phone, string? description)
+        {
+            if (string.IsNullOrWhiteSpace(fullName))
+                throw new ArgumentException("Full name is required.");
+
+            if (description?.Length > 500)
+                throw new ArgumentException("Description cannot exceed 500 characters.");
+
+            FullName = fullName;
+            Phone = phone;
+            Description = description;
         }
 
         public void Deactivate()
@@ -44,7 +63,6 @@ namespace BarberShop.Domain.Entities
         {
             IsActive = true;
         }
-
-
     }
+
 }

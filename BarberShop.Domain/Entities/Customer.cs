@@ -13,16 +13,22 @@ namespace BarberShop.Domain.Entities
         public string FirstName { get; private set; } = null!;
         public string LastName { get; private set; } = null!;
         public Email Email { get; private set; } = null!;
+        public PhoneNumber PhoneNumber { get; private set; } = null!;
+
+        public Guid UserId { get; private set; }
 
         private Customer() { }
 
-        public Customer(string firstName, string lastName, Email email)
+        private Customer(string firstName, string lastName, Email email, PhoneNumber phoneNumber, Guid userId)
         {
             FirstName = firstName;
             LastName = lastName;
             Email = email;
+            PhoneNumber = phoneNumber;
+            UserId = userId;
         }
-        public static Customer Create(string firstName, string lastName, Email email)
+
+        public static Customer Create(string firstName, string lastName, Email email, PhoneNumber phoneNumber, Guid userId)
         {
             if (string.IsNullOrWhiteSpace(firstName))
                 throw new ArgumentException("First name is required");
@@ -30,12 +36,17 @@ namespace BarberShop.Domain.Entities
             if (string.IsNullOrWhiteSpace(lastName))
                 throw new ArgumentException("Last name is required");
 
-            return new Customer(firstName, lastName, email);
+            return new Customer(firstName, lastName, email, phoneNumber, userId);
         }
-
 
         public void UpdateName(string firstName, string lastName)
         {
+            if (string.IsNullOrWhiteSpace(firstName))
+                throw new ArgumentException("First name is required");
+
+            if (string.IsNullOrWhiteSpace(lastName))
+                throw new ArgumentException("Last name is required");
+
             FirstName = firstName;
             LastName = lastName;
         }
@@ -43,6 +54,11 @@ namespace BarberShop.Domain.Entities
         public void UpdateEmail(Email email)
         {
             Email = email;
+        }
+
+        public void UpdatePhone(PhoneNumber phoneNumber)
+        {
+            PhoneNumber = phoneNumber;
         }
     }
 }
