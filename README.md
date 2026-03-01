@@ -114,17 +114,12 @@ Promueve:
 -Mantenibilidad
 -Facilidad de pruebas
 
-## Cómo ejecutar el proyecto
-
-Autenticación basada en JWT
-
-Hash seguro de contraseñas
-
-Email único a nivel de base de datos
-
-No se exponen detalles internos en producción
-
-Relaciones configuradas explícitamente en EF Core
+## Autenticación y seguridad
+  -Autenticación basada en JWT
+  -Hash seguro de contraseñas
+  -Email único a nivel de base de datos
+  -No se exponen detalles internos en producción
+  -Relaciones configuradas explícitamente en EF Core
 
 ## Cómo ejecutar el proyecto
 
