@@ -46,7 +46,7 @@ The architecture promotes:
 
 ---
 
-## ▶ How to run the project locally
+##  How to run the project locally
 
 1. Clone the repository
 2. Open the solution in Visual Studio
@@ -133,7 +133,7 @@ Relaciones configuradas explícitamente en EF Core
 3. Ejecutar el proyecto BarberShop.API
 4. Swagger se abrirá automáticamente en el navegador
 
-## 🎯 Objetivo del proyecto
+## Objetivo del proyecto
 
 Proyecto educativo para demostrar desarrollo backend profesional con .NET, arquitectura limpia y preparación para la nube.
 
