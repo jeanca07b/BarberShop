@@ -115,7 +115,6 @@ if (app.Environment.IsDevelopment())
     {
         options.DocumentTitle = "BarberShop SaaS API Docs";
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "BarberShop API v1");
-        options.RoutePrefix = "docs";
     });
 }
 
@@ -124,10 +123,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-app.MapGet("/", context =>
-{
-    context.Response.Redirect("/docs");
-    return Task.CompletedTask;
-});
 
 app.Run();
